@@ -4,7 +4,7 @@ import click
 
 from .preprocessing.data_handler import load_config_excel,load_config_yaml
 from .preprocessing.preprocessing import build_simulation
-from .solve import solve_GAMS, solve_pyomo
+from .solve import solve_GAMS
 from ._version import __version__
 
 @click.group(chain=True)
@@ -12,8 +12,6 @@ from ._version import __version__
               default='./ConfigFiles/ConfigTest.xlsx', help='Path to the config file (eg ConfigFiles/Config.xlsx)')
 @click.option('-g','--gams', 'engine',
               flag_value='gams', default=True, help='Use GAMS version (default)') #Interface to use for solving. Gams or pyomo')
-@click.option('-p','--pyomo', 'engine',
-              flag_value='pyomo', help='Use pyomo version')
 @click.version_option(prog_name='DispaSET', version=__version__)
 @click.pass_context
 def cli(ctx, config, engine):
@@ -38,8 +36,6 @@ def build(ctx):
     """Build simulation files"""
     conf = ctx.obj['conf']
     engine = ctx.obj['engine']
-    if engine == 'gams' and conf['WriteGDX']:
-        logging.warning('The config specifies that a gdx file should be written, although PYOMO is selected as engine. This a properly installed version of GAMS. Desactivate the option if it is not the case')
     __ = build_simulation(ctx.obj['conf'] )
 
 
@@ -49,9 +45,6 @@ def simulate(ctx):
     """Run GAMS or pyomo for simulation"""
     conf = ctx.obj['conf']
     engine = ctx.obj['engine']
-
-    if engine == 'pyomo':
-        r = solve_pyomo(conf['SimulationDirectory'])
 
     if engine == 'gams':
         r = solve_GAMS(conf['SimulationDirectory'], conf['GAMS_folder'])
